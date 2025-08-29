@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Conexión API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Conexión Frontend ↔ Backend</h1>
+    
+    <div id="status-container">
+        <div class="status info">🔄 Iniciando pruebas...</div>
+    </div>
+    
+    <button onclick="testConnection()">🔄 Probar Conexión</button>
+    <button onclick="testDataEndpoint()">📊 Probar Endpoint de Datos</button>
+    
+    <h2>📋 Resultados:</h2>
+    <pre id="results"></pre>
+
+    <script type="module">
+        import { apiService } from './js/apiService.js';
+        
+        window.testConnection = async function() {
+            const statusContainer = document.getElementById('status-container');
+            const resultsContainer = document.getElementById('results');
+            
+            try {
+                statusContainer.innerHTML = '<div class="status info">🔄 Probando conexión con la API...</div>';
+                
+                const status = await apiService.checkAPIStatus();
+                
+                statusContainer.innerHTML = '<div class="status success">✅ ¡Conexión exitosa!</div>';
+                resultsContainer.textContent = JSON.stringify(status, null, 2);
+                
+            } catch (error) {
+                statusContainer.innerHTML = `<div class="status error">❌ Error de conexión: ${error.message}</div>`;
+                resultsContainer.textContent = `Error: ${error.message}`;
+            }
+        };
+        
+        window.testDataEndpoint = async function() {
+            const statusContainer = document.getElementById('status-container');
+            const resultsContainer = document.getElementById('results');
+            
+            try {
+                statusContainer.innerHTML = '<div class="status info">🔄 Obteniendo datos del dashboard...</div>';
+                
+                const data = await apiService.getDashboardData();
+                
+                statusContainer.innerHTML = '<div class="status success">✅ ¡Datos obtenidos correctamente!</div>';
+                resultsContainer.textContent = JSON.stringify(data, null, 2);
+                
+            } catch (error) {
+                statusContainer.innerHTML = `<div class="status error">❌ Error al obtener datos: ${error.message}</div>`;
+                resultsContainer.textContent = `Error: ${error.message}`;
+            }
+        };
+        
+        // Test automático al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            testConnection();
+        });
+    </script>
+</body>
+</html>

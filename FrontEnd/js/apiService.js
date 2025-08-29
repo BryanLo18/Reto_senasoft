@@ -1,39 +1,32 @@
 /**
  * @file apiService.js
- * @description Módulo centralizado para todas las interacciones con la API.
- * Provee un conjunto de funciones para abstraer la lógica de las llamadas fetch.
+ * @description Módulo centralizado para todas las interacciones con la API del Dashboard de Aprendices.
+ * Provee funciones para obtener datos del dashboard con filtros opcionales.
  */
 
-import { logout } from './auth.js';
-
 // --- 1. CONFIGURACIÓN ---
-// Centralizamos la URL base de la API para facilitar su mantenimiento.
-const BASE_URL = '';
+// URL base de tu API FastAPI
+const BASE_URL = 'http://localhost:8000';
 
 
 // --- 2. FUNCIÓN PRIVADA DE FETCH ---
 /**
  * Motor central para realizar todas las llamadas a la API.
- * Maneja de forma centralizada la autenticación, cabeceras y errores comunes.
+ * Maneja de forma centralizada las cabeceras y errores comunes.
  * @private
- * @param {string} endpoint - El endpoint de la API al que se llamará (ej. '/users/create').
+ * @param {string} endpoint - El endpoint de la API al que se llamará (ej. '/api/data').
  * @param {object} options - El objeto de opciones para la llamada fetch (method, body, etc.).
  * @returns {Promise<any>} La respuesta JSON de la API.
  */
 const _fetchAPI = async (endpoint, options = {}) => {
     const url = `${BASE_URL}${endpoint}`;
-    const token = localStorage.getItem('accessToken');
 
     // Configuración de cabeceras por defecto
     const headers = {
         'accept': 'application/json',
+        'Content-Type': 'application/json',
         ...options.headers // Permite sobreescribir o añadir cabeceras
     };
-
-    // Si la llamada necesita autenticación y hay un token, lo añadimos.
-    if (options.requiresAuth && token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
         const response = await fetch(url, {
@@ -41,18 +34,14 @@ const _fetchAPI = async (endpoint, options = {}) => {
             headers: headers
         });
 
-        // Manejo de error de autenticación centralizado
-        if (response.status === 401) {
-            alert('Tu sesión ha expirado o no tienes permiso. Serás redirigido al login.');
-            logout();
-            throw new Error('Sesión expirada.');
+        // Manejo de errores del servidor
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ 
+                error: `Error ${response.status}: ${response.statusText}` 
+            }));
+            throw new Error(errorData.error || errorData.detail || 'Error del servidor');
         }
 
-        // Manejo de otros errores del servidor
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ detail: 'Ocurrió un error inesperado.' }));
-            throw new Error(errorData.detail);
-        }
         
         // Si la respuesta no tiene contenido (ej. un 204 No Content), devolvemos un objeto vacío.
         if (response.status === 204) {
@@ -68,58 +57,50 @@ const _fetchAPI = async (endpoint, options = {}) => {
     }
 };
 
-
 // --- 3. SERVICIO PÚBLICO EXPORTADO ---
 export const apiService = {
 
     /**
-     * Realiza la autenticación del usuario.
-     * @param {string} username - El correo del usuario.
-     * @param {string} password - La contraseña.
-     * @returns {Promise<object>}
+     * Obtiene todos los datos del dashboard sin filtros.
+     * @returns {Promise<object>} Datos del dashboard con cards y charts
      */
-    loginUser: (username, password) => {
-        const body = new URLSearchParams();
-        body.append('username', username);
-        body.append('password', password);
-
-        return _fetchAPI('/access/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body,
-            requiresAuth: false // La llamada de login no requiere autenticación previa
+    getDashboardData: () => {
+        return _fetchAPI('/api/data', {
+            method: 'GET'
         });
     },
 
     /**
-     * Obtiene los usuarios por código de centro.
-     * @returns {Promise<Array>}
+     * Obtiene datos del dashboard con filtros específicos.
+     * @param {object} filters - Objeto con filtros opcionales
+     * @param {string} filters.modalidad - Filtro por modalidad
+     * @param {string} filters.programa - Filtro por programa  
+     * @param {string} filters.nivel - Filtro por nivel
+     * @returns {Promise<object>} Datos filtrados del dashboard
      */
-    getUsersByCentro: () => {
-        const userString = localStorage.getItem('user');
-        if (!userString) {
-            return Promise.reject(new Error('Información de usuario no encontrada.'));
-        }
-        const user = JSON.parse(userString);
-        const cod_centro = user.cod_centro;
+    getDashboardDataWithFilters: (filters = {}) => {
+        // Construir query parameters
+        const params = new URLSearchParams();
         
-        return _fetchAPI(`/users/get-by-centro?cod_centro=${cod_centro}`, {
-            method: 'GET',
-            requiresAuth: true // Esta llamada sí necesita el token
+        if (filters.modalidad) params.append('modalidad', filters.modalidad);
+        if (filters.programa) params.append('programa', filters.programa);
+        if (filters.nivel) params.append('nivel', filters.nivel);
+
+        const queryString = params.toString();
+        const endpoint = queryString ? `/api/data?${queryString}` : '/api/data';
+
+        return _fetchAPI(endpoint, {
+            method: 'GET'
         });
     },
 
     /**
-     * Envía los datos de un nuevo usuario a la API para su creación.
-     * @param {object} userData - Objeto con los datos del nuevo usuario.
-     * @returns {Promise<object>}
+     * Verifica que la API esté funcionando.
+     * @returns {Promise<object>} Estado de la API
      */
-    createUser: (userData) => {
-        return _fetchAPI('/users/create', { // <-- ¡VERIFICA ESTE ENDPOINT!
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData),
-            requiresAuth: true
+    checkAPIStatus: () => {
+        return _fetchAPI('/', {
+            method: 'GET'
         });
     }
 };

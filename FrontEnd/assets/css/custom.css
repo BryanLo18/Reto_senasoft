@@ -1,0 +1,34 @@
+/* Estilos personalizados para el dashboard */
+
+/* Estilos para color púrpura */
+.bg-purple {
+  background-color: #7460ee !important;
+}
+
+.bg-purple-subtle {
+  background-color: rgba(116, 96, 238, 0.1) !important;
+}
+
+.text-purple {
+  color: #7460ee !important;
+}
+
+.border-purple {
+  border-color: #7460ee !important;
+}
+
+/* Asegura que los iconos se vean correctamente */
+.round-40 {
+  width: 40px;
+  height: 40px;
+}
+
+/* Mejoras adicionales para las tarjetas */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}

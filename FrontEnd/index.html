@@ -4,9 +4,63 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Flexy Free Bootstrap Admin Template by WrapPixel</title>
+  <title>Dashboard de Aprendices SENA</title>
   <link rel="shortcut icon" type="image/png" href="./assets/images/logos/favicon.png" />
   <link rel="stylesheet" href="./assets/css/styles.min.css" />
+  <link rel="stylesheet" href="./assets/css/custom.css" />
+  <style>
+    /* Animación para el spinner */
+    .spin {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Estilos para los filtros */
+    .alert-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+    
+    /* Transiciones suaves */
+    .card-body h3 {
+      transition: opacity 0.3s ease;
+    }
+
+    /* Estilos para controlar el tamaño de los gráficos */
+    .chart-container {
+      position: relative;
+      height: 300px; /* Altura fija para todos los gráficos */
+      width: 100%;
+      margin: 0 auto;
+    }
+    
+    .chart-container canvas {
+      max-height: 300px !important;
+      max-width: 100% !important;
+    }
+    
+    /* Gráfico de barras (programas) un poco más alto */
+    .chart-container.chart-bar {
+      height: 400px;
+    }
+    
+    .chart-container.chart-bar canvas {
+      max-height: 400px !important;
+    }
+
+    /* Gráficos circulares (pie/doughnut) */
+    .chart-container.chart-circular {
+      height: 300px;
+    }
+    
+    .chart-container.chart-circular canvas {
+      max-height: 300px !important;
+    }
+  </style>
 </head>
 
 <body>
@@ -1784,7 +1838,215 @@
       </header>
       <!--  Header End -->
       <div class="body-wrapper-inner">
-          <main id="main-content" class="container-fluid"></main>
+          <main id="main-content" class="container-fluid">
+            <!-- Contenedor de errores -->
+            <div id="error-container" style="display: none;"></div>
+            
+            <!-- Dashboard de Aprendices -->
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <h2 class="fw-semibold fs-6 mb-0">Dashboard de Aprendices SENA</h2>
+            </div>
+
+            <!-- Filtros -->
+            <div class="row mb-4">
+              <div class="col-md-4">
+                <select id="filtro-modalidad" class="form-select">
+                  <option value="">Todas las modalidades</option>
+                  <option value="PRESENCIAL">Presencial</option>
+                  <option value="VIRTUAL">Virtual</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select id="filtro-programa" class="form-select">
+                  <option value="">Todos los programas</option>
+                  <!-- Se llenarán dinámicamente -->
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select id="filtro-nivel" class="form-select">
+                  <option value="">Todos los niveles</option>
+                  <option value="TÉCNICO">Técnico</option>
+                  <option value="TECNÓLOGO">Tecnólogo</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Contenedores de estado -->
+            <div id="loading-container" style="display: none;"></div>
+            <div id="filter-status"></div>
+
+            <!-- Tarjetas de métricas -->
+            <div class="row">
+              <div class="col-md-3 col-6">
+                <div class="card bg-primary-subtle shadow-none border">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <h3 id="total-aprendices" class="fw-semibold mb-1">0</h3>
+                        <p class="mb-0">Total Aprendices</p>
+                      </div>
+                      <div class="round-40 d-flex align-items-center justify-content-center rounded bg-primary">
+                        <i class="ti ti-users text-white"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3 col-6">
+                <div class="card bg-success-subtle shadow-none border">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <h3 id="activos" class="fw-semibold mb-1">0</h3>
+                        <p class="mb-0">En Formación</p>
+                      </div>
+                      <div class="round-40 d-flex align-items-center justify-content-center rounded bg-success">
+                        <i class="ti ti-user-check text-white"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3 col-6">
+                <div class="card bg-info-subtle shadow-none border">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <h3 id="femeninos" class="fw-semibold mb-1">0</h3>
+                        <p class="mb-0">Femeninos</p>
+                      </div>
+                      <div class="round-40 d-flex align-items-center justify-content-center rounded bg-info">
+                        <i class="ti ti-gender-female text-white"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3 col-6">
+                <div class="card bg-warning-subtle shadow-none border">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <h3 id="masculinos" class="fw-semibold mb-1">0</h3>
+                        <p class="mb-0">Masculinos</p>
+                      </div>
+                      <div class="round-40 d-flex align-items-center justify-content-center rounded bg-warning">
+                        <i class="ti ti-gender-male text-white"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3 col-6">
+                <div class="card bg-purple-subtle shadow-none border">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <h3 id="no-binarios" class="fw-semibold mb-1">0</h3>
+                        <p class="mb-0">No Binarios</p>
+                      </div>
+                      <div class="round-40 d-flex align-items-center justify-content-center rounded bg-purple">
+                        <i class="ti ti-gender-androgyne text-white"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nuevas tarjetas de Grupos -->
+            <div class="row mt-4">
+              <div class="col-md-4 col-6">
+                <div class="card bg-secondary-subtle shadow-none border">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <h3 id="total-grupos" class="fw-semibold mb-1">0</h3>
+                        <p class="mb-0">Total de Grupos</p>
+                      </div>
+                      <div class="round-40 d-flex align-items-center justify-content-center rounded bg-secondary">
+                        <i class="ti ti-users-group text-white"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 col-6">
+                <div class="card bg-primary-subtle shadow-none border">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <h3 id="grupos-virtuales" class="fw-semibold mb-1">0</h3>
+                        <p class="mb-0">Grupos Virtuales</p>
+                      </div>
+                      <div class="round-40 d-flex align-items-center justify-content-center rounded bg-primary">
+                        <i class="ti ti-world text-white"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4 col-6">
+                <div class="card bg-success-subtle shadow-none border">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <h3 id="grupos-presenciales" class="fw-semibold mb-1">0</h3>
+                        <p class="mb-0">Grupos Presenciales</p>
+                      </div>
+                      <div class="round-40 d-flex align-items-center justify-content-center rounded bg-success">
+                        <i class="ti ti-school text-white"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="row mt-4">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">Distribución por Modalidad</h5>
+                    <div class="chart-container chart-circular">
+                      <canvas id="grafico-modalidad"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">Distribución por Nivel</h5>
+                    <div class="chart-container chart-circular">
+                      <canvas id="grafico-nivel"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mt-4">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">Distribución por Programa de Formación</h5>
+                    <div class="chart-container chart-bar">
+                      <canvas id="grafico-programa"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
       </div>
     </div>
   </div>
@@ -1794,8 +2056,10 @@
   <script src="./assets/js/app.min.js"></script>
   <script src="./assets/libs/apexcharts/dist/apexcharts.min.js"></script>
   <script src="./assets/libs/simplebar/dist/simplebar.js"></script>
-  <!-- <script src="./assets/js/dashboard.js"></script> -->
-   
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
   <!-- solar icons -->
   <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
   <script src="js/main.js" type="module"></script>
