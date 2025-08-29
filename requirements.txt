@@ -1,0 +1,45 @@
+# === DEPENDENCIAS PRINCIPALES ===
+
+# FastAPI - Framework web moderno y rápido para APIs
+fastapi==0.104.1
+
+# Uvicorn - Servidor ASGI para FastAPI
+uvicorn[standard]==0.24.0
+
+# Pandas - Procesamiento y análisis de datos
+pandas==2.1.3
+
+# OpenPyXL - Lectura y escritura de archivos Excel
+openpyxl==3.1.2
+
+# Python-multipart - Para el manejo de formularios y archivos
+python-multipart==0.0.6
+
+# === DEPENDENCIAS DE DESARROLLO (OPCIONALES) ===
+
+# Pytest - Framework de testing
+pytest==7.4.3
+
+# Requests - Para testing de APIs
+requests==2.31.0
+
+# Black - Formateador de código Python
+black==23.11.0
+
+# Flake8 - Linter para Python
+flake8==6.1.0
+
+# === DEPENDENCIAS DEL SISTEMA ===
+
+# Typing Extensions - Mejoras de tipado para Python < 3.10
+typing-extensions==4.8.0
+
+# === NOTAS ===
+# Para instalar todas las dependencias principales:
+# pip install fastapi uvicorn pandas openpyxl python-multipart
+
+# Para instalar todas las dependencias (incluyendo desarrollo):
+# pip install -r requirements.txt
+
+# Para generar este archivo desde un entorno existente:
+# pip freeze > requirements.txt
